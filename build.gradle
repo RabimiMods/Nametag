@@ -30,12 +30,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 loom {
-    splitEnvironmentSourceSets()
-
     mods {
         nametag {
             sourceSet sourceSets.main
-            sourceSet sourceSets.client
         }
     }
 }
