@@ -28,5 +28,5 @@ jobs:
       - name: Upload MOD artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JavaSkinChanger-mod
+          name: Nametag-mod
           path: build/libs/*.jar
