@@ -1,47 +1,41 @@
 plugins {
-    id 'fabric-loom' version '1.13.6'
     id 'java'
+    id 'fabric-loom' version '1.13-SNAPSHOT'
 }
 
-group = 'com.rabimi'
-version = '1.6.1'
+group = 'com.rabimi.nametag'
+version = '1.0.0'
 
 repositories {
-    maven {
-        name = "Fabric"
-        url = "https://maven.fabricmc.net/"
-    }
-    maven {
-        name = "SonatypeSnapshots"
-        url = "https://oss.sonatype.org/content/repositories/snapshots/"
-    }
     mavenCentral()
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:1.21.5"
     mappings "net.fabricmc:yarn:1.21.5+build.1:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.18.1"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.128.2+1.21.5"
+    modImplementation "net.fabricmc:fabric-loader:0.16.7"
+
+    // Fabric API（必要）
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.1+1.21.5"
 }
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
-    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
 }
 
 loom {
     splitEnvironmentSourceSets()
 
-    runs {
-        client {
-            ideConfigGenerated = true
+    mods {
+        nametag {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
         }
     }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
 }
