@@ -1,11 +1,9 @@
 pluginManagement {
     repositories {
-        maven { url = 'https://maven.fabricmc.net/' }
-        maven { url = "https://maven.terraformersmc.com/" }
-        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
+        maven { url = "https://maven.fabricmc.net/" }
     }
 }
 
-rootProject.name = "JavaSkinChanger"
+rootProject.name = "Nametag"
