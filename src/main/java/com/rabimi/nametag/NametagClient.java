@@ -1,95 +1,56 @@
 package com.rabimi.nametag;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.RotationAxis;
 
 public class NametagClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
 
-        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register((worldRenderContext, blockOutlineContext) -> {
-
+        HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null) return true;
+            if (client.player == null) return;
 
-            MatrixStack matrices = worldRenderContext.matrixStack();
-
-            double x = client.player.getX();
-            double y = client.player.getY() + 2.9;
-            double z = client.player.getZ();
-
-            matrices.push();
-
-            matrices.translate(
-                x - worldRenderContext.camera().getPos().x,
-                y - worldRenderContext.camera().getPos().y,
-                z - worldRenderContext.camera().getPos().z
-            );
-
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-client.getEntityRenderDispatcher().camera.getYaw()));
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(client.getEntityRenderDispatcher().camera.getPitch()));
-
-            matrices.scale(-0.025f, -0.025f, 0.025f);
-
-            TextRenderer tr = client.textRenderer;
-            VertexConsumerProvider.Immediate vcp = client.getBufferBuilders().getEntityVertexConsumers();
-
-            String name = client.player.getName().getString();
-            int width = tr.getWidth(name);
-
-            // --- 黒い背景板 ---
-            matrices.push();
-
-            float bgLeft = -width / 2f - 2;
-            float bgRight = width / 2f + 2;
-            float bgTop = -2;
-            float bgBottom = tr.fontHeight + 2;
-
-            RenderSystem.disableTexture();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-
-            BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-            buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-
-            buffer.vertex(matrices.peek().getPositionMatrix(), bgLeft, bgBottom, 0).color(0, 0, 0, 150).next();
-            buffer.vertex(matrices.peek().getPositionMatrix(), bgRight, bgBottom, 0).color(0, 0, 0, 150).next();
-            buffer.vertex(matrices.peek().getPositionMatrix(), bgRight, bgTop, 0).color(0, 0, 0, 150).next();
-            buffer.vertex(matrices.peek().getPositionMatrix(), bgLeft, bgTop, 0).color(0, 0, 0, 150).next();
-
-            BufferRenderer.drawWithGlobalProgram(buffer.end());
-            RenderSystem.disableBlend();
-            RenderSystem.enableTexture();
-
-            matrices.pop();
-
-            // --- 名前の白文字 ---
-            tr.draw(
-                Text.of(name),
-                -width / 2f,
-                0,
-                0xFFFFFF,
-                false,
-                matrices.peek().getPositionMatrix(),
-                vcp,
-                TextRenderer.TextLayerType.NORMAL,
-                0,
-                15728880
-            );
-
-            vcp.draw();
-            matrices.pop();
-
-            return true;
+            // F1で消えるのを防ぐ
+            if (!client.options.hudHidden) {
+                drawNameTag(drawContext);
+            }
         });
+    }
 
+    private void drawNameTag(DrawContext drawContext) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        String name = client.player.getName().getString();
+
+        int screenWidth = client.getWindow().getScaledWidth();
+        int screenHeight = client.getWindow().getScaledHeight();
+
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2 - 40; // 頭上っぽい位置にちょい上
+
+        int textWidth = client.textRenderer.getWidth(name);
+        int padding = 4;
+
+        int bgLeft = centerX - textWidth / 2 - padding;
+        int bgTop = centerY - padding - 1;
+        int bgRight = centerX + textWidth / 2 + padding;
+        int bgBottom = centerY + 9 + padding;
+
+        // 黒背景（半透明）
+        drawContext.fill(bgLeft, bgTop, bgRight, bgBottom, 0x88000000);
+
+        // 白文字
+        drawContext.drawText(
+                client.textRenderer,
+                Text.of(name),
+                centerX - textWidth / 2,
+                centerY,
+                0xFFFFFF,
+                false
+        );
     }
 }
