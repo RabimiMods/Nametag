@@ -34,7 +34,7 @@ public class NametagClient implements ClientModInitializer {
 
         // 画面中央ちょい上（頭の位置）
         int centerX = screenWidth / 2;
-        int centerY = screenHeight / 2 - 60;
+        int centerY = screenHeight / 2 - 30;
 
         int textWidth = client.textRenderer.getWidth(name);
 
@@ -56,7 +56,7 @@ public class NametagClient implements ClientModInitializer {
         drawContext.drawText(
                 client.textRenderer,
                 Text.of(name),
-                centerX - textWidth / 2,
+                centerX - textWidth / 1.5,
                 centerY,
                 0xFFFFFF,
                 false
