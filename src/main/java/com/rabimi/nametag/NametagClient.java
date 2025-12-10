@@ -4,61 +4,62 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.RotationAxis;
 
 public class NametagClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+
+        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register((worldRenderContext, blockOutlineContext) -> {
+
             MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null || client.isPaused()) return;
+            if (client.player == null) return;
 
-            var player = client.player;
+            MatrixStack matrices = worldRenderContext.matrixStack();
 
-            // カメラ位置
-            Vec3d cam = client.gameRenderer.getCamera().getPos();
-
-            // プレイヤー位置
-            double x = player.getX() - cam.x;
-            double y = player.getY() - cam.y + 2.2;
-            double z = player.getZ() - cam.z;
-
-            var matrices = context.matrixStack();
-            var consumers = context.consumers();
+            double x = client.player.getX();
+            double y = client.player.getY() + 2.9;
+            double z = client.player.getZ();
 
             matrices.push();
 
-            matrices.translate(x, y, z);
+            matrices.translate(
+                x - worldRenderContext.camera().getPos().x,
+                y - worldRenderContext.camera().getPos().y,
+                z - worldRenderContext.camera().getPos().z
+            );
 
-            // カメラ方向に向ける
-            matrices.multiply(client.getEntityRenderDispatcher().getRotation());
+            // カメラの向きで回転
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-client.getEntityRenderDispatcher().camera.getYaw()));
+            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(client.getEntityRenderDispatcher().camera.getPitch()));
 
-            // 大きさ
-            float scale = 0.025f;
-            matrices.scale(-scale, -scale, scale);
+            matrices.scale(-0.025f, -0.025f, 0.025f);
 
             TextRenderer tr = client.textRenderer;
-            String name = player.getName().getString();
-            int width = tr.getWidth(name);
+            VertexConsumerProvider.Immediate vcp = client.getBufferBuilders().getEntityVertexConsumers();
 
-            // ここ大事！
-            // Debug(F3) や F1 の HUD 非表示とは関係なしに描画される
             tr.draw(
-                Text.literal(name),
-                -width / 2f,
+                Text.of(client.player.getName().getString()),
+                -tr.getWidth(client.player.getName().getString()) / 2f,
                 0,
                 0xFFFFFF,
                 false,
                 matrices.peek().getPositionMatrix(),
-                consumers,
-                TextRenderer.TextLayerType.SEE_THROUGH,
+                vcp,
+                TextRenderer.TextLayerType.NORMAL,
                 0,
                 15728880
             );
 
+            vcp.draw();
             matrices.pop();
+
+            return true;
         });
+
     }
 }
