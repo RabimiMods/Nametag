@@ -56,7 +56,7 @@ public class NametagClient implements ClientModInitializer {
         drawContext.drawText(
                 client.textRenderer,
                 Text.of(name),
-                centerX - textWidth / 1.5,
+                centerX - textWidth / 2 - 20,
                 centerY,
                 0xFFFFFF,
                 false
