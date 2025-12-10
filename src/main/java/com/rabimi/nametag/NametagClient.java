@@ -39,10 +39,10 @@ public class NametagClient implements ClientModInitializer {
         int textWidth = client.textRenderer.getWidth(name);
 
         // 個別にパディング設定
-        int paddingLeft = 8;
-        int paddingRight = 8;
-        int paddingTop = 4;
-        int paddingBottom = 4;
+        int paddingLeft = 10;
+        int paddingRight = 10;
+        int paddingTop = 2;
+        int paddingBottom = 2;
 
         int bgLeft = centerX - textWidth / 2 - paddingLeft;
         int bgTop = centerY - paddingTop - 1;
@@ -56,7 +56,7 @@ public class NametagClient implements ClientModInitializer {
         drawContext.drawText(
                 client.textRenderer,
                 Text.of(name),
-                centerX - textWidth / 2 - 20,
+                centerX - textWidth / 2,
                 centerY,
                 0xFFFFFF,
                 false
