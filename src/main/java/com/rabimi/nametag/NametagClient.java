@@ -15,7 +15,10 @@ public class NametagClient implements ClientModInitializer {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player == null) return;
 
-            // F1で消えるのを防ぐ
+            // 一人称視点(First Person)なら非表示にする
+            if (client.options.getPerspective().isFirstPerson()) return;
+
+            // HUD非表示(F1)じゃなければ描画
             if (!client.options.hudHidden) {
                 drawNameTag(drawContext);
             }
@@ -29,18 +32,24 @@ public class NametagClient implements ClientModInitializer {
         int screenWidth = client.getWindow().getScaledWidth();
         int screenHeight = client.getWindow().getScaledHeight();
 
+        // 画面中央ちょい上（頭の位置）
         int centerX = screenWidth / 2;
-        int centerY = screenHeight / 2 - 40; // 頭上っぽい位置にちょい上
+        int centerY = screenHeight / 2 - 60;
 
         int textWidth = client.textRenderer.getWidth(name);
-        int padding = 4;
 
-        int bgLeft = centerX - textWidth / 2 - padding;
-        int bgTop = centerY - padding - 1;
-        int bgRight = centerX + textWidth / 2 + padding;
-        int bgBottom = centerY + 9 + padding;
+        // 個別にパディング設定
+        int paddingLeft = 8;
+        int paddingRight = 8;
+        int paddingTop = 4;
+        int paddingBottom = 4;
 
-        // 黒背景（半透明）
+        int bgLeft = centerX - textWidth / 2 - paddingLeft;
+        int bgTop = centerY - paddingTop - 1;
+        int bgRight = centerX + textWidth / 2 + paddingRight;
+        int bgBottom = centerY + 9 + paddingBottom;
+
+        // 半透明の黒背景
         drawContext.fill(bgLeft, bgTop, bgRight, bgBottom, 0x88000000);
 
         // 白文字
